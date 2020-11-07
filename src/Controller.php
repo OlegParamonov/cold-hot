@@ -1,26 +1,30 @@
-<?php 
-  namespace OlegParamonov\Coldhot\Controller;
-  use function OlegParamonov\Coldhot\View\showGame;
+<?php
 
-function mainMenu()
+    namespace OlegParamonov\Coldhot\Controller;
+
+    use RedBeanPHP\R as R;
+
+    use function OlegParamonov\Coldhot\View\showGame;
+    use function OlegParamonov\Coldhot\Model\startGameDB;
+    use function OlegParamonov\Coldhot\Model\listGames;
+    use function OlegParamonov\Coldhot\Model\createDatabase;
+    use function OlegParamonov\Coldhot\Model\openDatabase;
+    use function OlegParamonov\Coldhot\Model\updateDB;
+
+function mainMenu($key)
 {
-    while (true) {
-        $command = \cli\prompt("Введите ключ");
-        if ($command == "--new") {
-            startGame();
-        } elseif ($command == "--list") {
-            listGames();
-        } else {
-            \cli\line("Неверный ключ");
-        }
+    if ($key[1] == "--new") {
+        startGame();
+    } elseif ($key[1] == "--list") {
+        listGames();
+    } else {
+        \cli\line("Неверный ключ");
     }
-}    
+}
 
 function startGame()
 {
     showGame();
-
-    $db = openDatabase();
 
     date_default_timezone_set("Europe/Moscow");
     $gameData = date("d") . "." . date("m") . "." . date("Y");
@@ -33,21 +37,7 @@ function startGame()
     $hiddenNumber = implode('', $currentNumber);
     $number = 0;
 
-    $db->exec("INSERT INTO gamesInfo (
-        gameData, 
-        gameTime,
-        playerName,
-        hiddenNumber,
-        result
-        ) VALUES (
-        '$gameData', 
-        '$gameTime',
-        '$playerName',
-        '$hiddenNumber',
-        'Не закончено'
-        )");
-
-    $idGame = $db->querySingle("SELECT idGame FROM gamesInfo ORDER BY idGame DESC LIMIT 1");
+    $idGame = startGameDB($gameData, $gameTime, $playerName, $hiddenNumber);
 
     while ($number != $currentNumber) {
         $number = readline("Введите трехзначное число : ");
@@ -77,54 +67,4 @@ function startGame()
             echo "Ошибка! Введите число.\n";
         }
     }
-}
-
-function listGames()
-{
-    $db = openDatabase();
-    $query = $db->query('SELECT * FROM gamesInfo');
-    while ($row = $query->fetchArray()) {
-        \cli\line("ID $row[0])\n Дата: $row[1]\n Время: $row[2]\n Имя: $row[3]\n Загаданное число: $row[4]\n Результат: $row[5]");
-    }
-}
-
-function createDatabase()
-{
-    $db = new \SQLite3('gamedb.db');
-
-    $gamesInfoTable = "CREATE TABLE gamesInfo(
-        idGame INTEGER PRIMARY KEY,
-        gameData DATE,
-        gameTime TIME,
-        playerName TEXT,
-        hiddenNumber TEXT,
-        result TEXT
-    )";
-    $db->exec($gamesInfoTable);
-
-    $stepsInfoTable = "CREATE TABLE stepsInfo(
-        idGame INTEGER,
-        result INTEGER
-    )";
-    $db->exec($stepsInfoTable);
-
-    return $db;
-}
-
-function openDatabase()
-{
-    if (!file_exists("gamedb.db")) {
-        $db = createDatabase();
-    } else {
-        $db = new \SQLite3('gamedb.db');
-    }
-    return $db;
-}
-
-function updateDB($idGame, $result)
-{
-    $db = openDatabase();
-    $db->exec("UPDATE gamesInfo
-        SET result = '$result'
-        WHERE idGame = '$idGame'");
 }

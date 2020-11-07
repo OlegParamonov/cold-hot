@@ -8,7 +8,11 @@
         require_once($autoloadPathForPackagist);
     }
 
-    use function OlegParamonov\Coldhot\Controller\mainMenu;
-    mainMenu();
+    use function NikitaMakshev\Coldhot\Controller\mainMenu;
+	
+	if(isset($argv[1]))
+   		mainMenu($argv);
+   	else
+   		\cli\line("Ключ не введен");
 
 ?>

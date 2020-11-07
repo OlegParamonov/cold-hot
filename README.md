@@ -34,7 +34,7 @@
 
 1. Установить composer, если он не установлен;
 2. Перейти в каталог, в который вы будете клонировать проект;
-3. Выполнить команду `composer require nikit/cold-hot`;
+3. Выполнить команду `composer require paramonov/cold-hot`;
 4. Перейти в каталог vendor/bin;
 5. Запустить файл guess-number.bat.
 

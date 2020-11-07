@@ -1,5 +1,5 @@
 @echo off
 
-php cold-hot
+php cold-hot %1 %2
 
 pause
